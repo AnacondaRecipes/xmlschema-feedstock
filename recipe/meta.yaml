@@ -1,5 +1,5 @@
 {% set name = "xmlschema" %}
-{% set version = "2.3.0" %}
+{% set version = "2.3.1" %}
 
 package:
   name: {{ name }}
@@ -7,35 +7,43 @@ package:
 
 source:
   url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: c2d583f7d07c6bac157d075889d15c128f34afdc79e4f70b4fb3c6adedc59bfe
+  sha256: 2eb426c5710833a05610c22c8766713a1b87e9405e3eca0b7c658375bf7ec810
 
 build:
   number: 0
-  script: {{ PYTHON }} -m pip install . --no-deps -vv
-  noarch: python
+  skip: True  # [py<37]
+  script: {{ PYTHON }} -m pip install . --no-deps --no-build-isolation -vv
+  entry_points:
+    - xmlschema-validate=xmlschema.cli:validate
+    - xmlschema-xml2json=xmlschema.cli:xml2json
+    - xmlschema-json2xml=xmlschema.cli:json2xml
 
 requirements:
   host:
-    - python >=3.7
+    - python
     - pip
-    - elementpath <5.0.0,>=4.1.2
-
+    - elementpath 4.1.4
+    - setuptools
+    - wheel
   run:
-    - python >=3.7
-    - elementpath <5.0.0,>=4.1.2
+    - python
+    - elementpath >=4.1.2,<5.0.0
 
 test:
+  imports:
+    - xmlschema
+  source_files:
+    - tests
   requires:
     - jinja2
     - lxml
     - pip
-  source_files:
-    - tests
-  imports:
-    - xmlschema
   commands:
-    - python tests/test_all.py
     - pip check
+    - xmlschema-validate --help
+    - xmlschema-xml2json --help
+    - xmlschema-json2xml --help
+    - python tests/test_all.py
 
 about:
   home: https://github.com/sissaschool/xmlschema
@@ -57,6 +65,7 @@ about:
     processing, not only for the original scope.
 
   dev_url: https://github.com/sissaschool/xmlschema
+  doc_url: https://xmlschema.readthedocs.io/
 
 extra:
   recipe-maintainers:
